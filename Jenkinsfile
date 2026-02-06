@@ -8,6 +8,28 @@ pipeline {
             }
         }
 
+stage('Create Environment File') {
+    steps {
+        sh '''
+        cat <<EOF > .env
+POSTGRES_DB=appdb
+POSTGRES_USER=appuser
+POSTGRES_PASSWORD=apppass
+
+DB_HOST=db
+DB_PORT=5432
+
+BACKEND_PORT=8000
+FRONTEND_PORT=3000
+EOF
+        '''
+    }
+}
+
+
+
+
+
         stage('Build Images') {
             steps {
                 sh 'docker-compose build'
