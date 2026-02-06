@@ -2,11 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies
+ENV HOST=0.0.0.0
+
 COPY package.json package-lock.json* ./
 RUN npm install
 
-# Copy source
 COPY . .
 
 EXPOSE 3000
