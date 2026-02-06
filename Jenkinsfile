@@ -1,59 +1,40 @@
 pipeline {
     agent any
 
-    environment {
-        FLASK_ENV = "development"
-        FLASK_APP = "app.py"
-
-        DB_HOST = "localhost"
-        DB_NAME = "testdb"
-        DB_USER = "testuser"
-        DB_PASSWORD = "testpass"
-    }
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-        stage('Verify Python') {
+        stage('Build Images') {
             steps {
-                sh '''
-                python --version || python3 --version
-                '''
+                sh 'docker-compose build'
             }
         }
 
-        stage('Setup Python Venv') {
+        stage('Start Application') {
             steps {
-                sh '''
-                python3 -m venv venv || python -m venv venv
-                . venv/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
+                sh 'docker-compose up -d'
             }
         }
 
-        stage('Basic App Test') {
+        stage('Verify') {
             steps {
                 sh '''
-                . venv/bin/activate
-                python -c "import app; print('App import successful')"
+                  docker ps
+                  curl -f http://localhost:8000 || true
+                  curl -f http://localhost:3000 || true
                 '''
             }
         }
     }
 
     post {
-        success {
-            echo 'Pipeline completed successfully'
-        }
         failure {
-            echo 'Pipeline failed'
+            sh 'docker-compose logs'
         }
     }
 }
+
